@@ -21,6 +21,7 @@ class UrlsController extends AppController
     {
 
         $conditions = array();
+        // VERIFICA SE É O ADMINISTRADOR PARA LISTAR TODAS
         if ($this->request->getSession()->read('Auth.id') != 1) {
             $conditions = 'usuario_id =' . $this->request->getSession()->read('Auth.id');
         }

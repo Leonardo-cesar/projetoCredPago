@@ -13,10 +13,16 @@ namespace App\Controller;
 class RequisicoesController extends AppController
 {
 
+    // CRON QUE FAZ A VERIFICAÇÃO DAS URLS A CADA 1 MINUTO
     public function cron()
     {
+        // DESABILITA O TEMPLATE
         $this->autoRender = false;
+
+        //BUSCA AS URLS
         $urls = $this->Requisicoes->Urls->find('list', ['valueField' => 'url']);
+
+        // FAZ O LAÇO E ARMAZENA O RESULTADO
         foreach ($urls as $key => $url) {
             $ch = curl_init();
             curl_setopt($ch, CURLOPT_URL, $url);
@@ -37,9 +43,11 @@ class RequisicoesController extends AppController
         }
     }
 
+    // LISTA AS REQUISIÇÕES NA HOME
     public function listar()
     {
         $conditions = array();
+        // VERIFICA SE É O ADMINISTRADOR PARA LISTAR TODAS
         if ($this->request->getSession()->read('Auth.id') != 1) {
             $conditions = 'urls.usuario_id =' . $this->request->getSession()->read('Auth.id');
         }
@@ -55,9 +63,11 @@ class RequisicoesController extends AppController
         $this->RequestHandler->renderAs($this, 'json');
     }
 
+    // RESPONSAVÉL POR GERAR OS DADOS PARA O GRÁFICO 
     public function grafico()
     {
         $conditions = array();
+        // VERIFICA SE É O ADMINISTRADOR PARA LISTAR TODAS
         if ($this->request->getSession()->read('Auth.id') != 1) {
             $conditions = 'urls.usuario_id =' . $this->request->getSession()->read('Auth.id');
         }
@@ -116,71 +126,5 @@ class RequisicoesController extends AppController
         ]);
 
         $this->set(compact('requisico'));
-    }
-
-    /**
-     * Add method
-     *
-     * @return \Cake\Http\Response|null|void Redirects on successful add, renders view otherwise.
-     */
-    public function add()
-    {
-        $requisico = $this->Requisicoes->newEmptyEntity();
-        if ($this->request->is('post')) {
-            $requisico = $this->Requisicoes->patchEntity($requisico, $this->request->getData());
-            if ($this->Requisicoes->save($requisico)) {
-                $this->Flash->success(__('The requisico has been saved.'));
-
-                return $this->redirect(['action' => 'index']);
-            }
-            $this->Flash->error(__('The requisico could not be saved. Please, try again.'));
-        }
-        $urls = $this->Requisicoes->Urls->find('list', ['limit' => 200])->all();
-        $this->set(compact('requisico', 'urls'));
-    }
-
-    /**
-     * Edit method
-     *
-     * @param string|null $id Requisico id.
-     * @return \Cake\Http\Response|null|void Redirects on successful edit, renders view otherwise.
-     * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
-     */
-    public function edit($id = null)
-    {
-        $requisico = $this->Requisicoes->get($id, [
-            'contain' => [],
-        ]);
-        if ($this->request->is(['patch', 'post', 'put'])) {
-            $requisico = $this->Requisicoes->patchEntity($requisico, $this->request->getData());
-            if ($this->Requisicoes->save($requisico)) {
-                $this->Flash->success(__('The requisico has been saved.'));
-
-                return $this->redirect(['action' => 'index']);
-            }
-            $this->Flash->error(__('The requisico could not be saved. Please, try again.'));
-        }
-        $urls = $this->Requisicoes->Urls->find('list', ['limit' => 200])->all();
-        $this->set(compact('requisico', 'urls'));
-    }
-
-    /**
-     * Delete method
-     *
-     * @param string|null $id Requisico id.
-     * @return \Cake\Http\Response|null|void Redirects to index.
-     * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
-     */
-    public function delete($id = null)
-    {
-        $this->request->allowMethod(['post', 'delete']);
-        $requisico = $this->Requisicoes->get($id);
-        if ($this->Requisicoes->delete($requisico)) {
-            $this->Flash->success(__('The requisico has been deleted.'));
-        } else {
-            $this->Flash->error(__('The requisico could not be deleted. Please, try again.'));
-        }
-
-        return $this->redirect(['action' => 'index']);
     }
 }

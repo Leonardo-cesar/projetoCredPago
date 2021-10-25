@@ -16,13 +16,17 @@ use Cake\Event\EventInterface;
  */
 class UsuariosController extends AppController
 {
+
     public function beforeFilter(\Cake\Event\EventInterface $event)
     {
         parent::beforeFilter($event);
 
+        // VIEWS QUE NÃO PRECISA ESTA AUTENTICADAS PARA VISUALIZAR
         $this->Authentication->allowUnauthenticated(['login', 'cadastrar', 'verificaUsuario']);
     }
 
+
+    // LOGIN DO USUÁRIO
     public function login()
     {
         $this->set('title', 'Login Sistema - CREDPAGO');
@@ -37,14 +41,17 @@ class UsuariosController extends AppController
         }
     }
 
+    //LOGOUT
     public function logout()
     {
         $this->Authentication->logout();
         return $this->redirect(['controller' => 'Usuarios', 'action' => 'login']);
     }
 
+    // ALTERAR SENHA
     public function senha($id = null)
     {
+        // VERIFICA SE A ID INFORMADA É A MESMA QUE ESTA LOGADA
         if ($this->request->getSession()->read('Auth.id') != $id || $id == null) {
             $this->Flash->error(__('Sem permissão!'));
             return $this->redirect('/home');
@@ -54,6 +61,7 @@ class UsuariosController extends AppController
 
         if ($this->request->is(['patch', 'post', 'put'])) {
             if (strlen($this->request->getData('password')) > 0) {
+                // CRIPTOGRAFA A SENHA
                 $pass = (new DefaultPasswordHasher)->hash($this->request->getData('password'));
             }
 
@@ -65,6 +73,7 @@ class UsuariosController extends AppController
         $this->set(compact('usuario'));
     }
 
+    // VERIFICA OS USUARIOS CADASTRADOS PARA NÃO REPETIR
     public function verificaUsuario()
     {
         if ($this->request->getQuery('nome') != '') {
@@ -80,6 +89,7 @@ class UsuariosController extends AppController
         $this->RequestHandler->renderAs($this, 'json');
     }
     
+    // CADASTRAR UM NOVO USUÁRIO
     public function cadastrar()
     {
         $this->viewBuilder()->setLayout('cadastrar');
@@ -145,6 +155,7 @@ class UsuariosController extends AppController
         $usuario = $this->Usuarios->newEmptyEntity();
         if ($this->request->is('post')) {
             $this->request->getData['usuario'] = $this->request->getData();
+            // CRIPTOGRAFA A SENHA
             $pass = (new DefaultPasswordHasher)->hash($this->request->getData('password'));
             $this->request->getData['usuario']['password'] = $pass;
             $this->request->getData['usuario']['ultimo_acesso'] = date("Y-m-d H:i:s");
